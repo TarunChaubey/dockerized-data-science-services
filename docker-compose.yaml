@@ -1,0 +1,139 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  database_mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend
+    labels:
+      - name=database
+
+  # PostgreSQL Service
+  database_postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgre
+      POSTGRES_PASSWORD: postgre
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/data
+    networks:
+      - backend
+    labels:
+      - name=database
+
+  # Redis Service
+  database_redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    labels:
+      - name=database
+
+  # OpenSearch Node 1
+  opensearch-node1:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - discovery.seed_hosts=opensearch-node1,opensearch-node2
+      - cluster.initial_cluster_manager_nodes=opensearch-node1,opensearch-node2
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=YourPassword1234!
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+    ports:
+      - "9200:9200"  # Expose HTTP port
+      - "9600:9600"  # Expose monitoring port
+    networks:
+      - backend
+
+  # OpenSearch Node 2
+  opensearch-node2:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node2
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node2
+      - discovery.seed_hosts=opensearch-node1,opensearch-node2
+      - cluster.initial_cluster_manager_nodes=opensearch-node1,opensearch-node2
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=YourPassword1234!
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data2:/usr/share/opensearch/data
+    networks:
+      - backend
+
+  # OpenSearch Dashboards
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch-node1:9200", "http://opensearch-node2:9200"]'
+      OPENSEARCH_USERNAME: 'admin'
+      OPENSEARCH_PASSWORD: 'YourPassword1234!'
+      opensearch_security.disabled: 'true'
+    ports:
+      - "5601:5601"  # Expose Dashboards
+    networks:
+      - backend
+
+volumes:
+  # Persistent data volumes for MongoDB, PostgreSQL, Redis, and OpenSearch
+  mongodb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Mongodb
+      o: bind
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Postgre
+      o: bind
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Redis
+      o: bind
+  opensearch-data1:  # Persistent volume for node 1
+  opensearch-data2:  # Persistent volume for node 2
+
+networks:
+  backend:
+    driver: bridge  # Ensure all services are on the same network

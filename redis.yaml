@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  database_redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    labels:
+      - name=database
+volumes:
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Redis
+      o: bind
+networks:
+  backend:
+    driver: bridge
