@@ -1,0 +1,23 @@
+version: '3'
+services:
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch-node1:9200","http://opensearch-node2:9200"]'
+      OPENSEARCH_USERNAME: 'admin'
+      OPENSEARCH_PASSWORD: 'YourPassword1234!'
+      opensearch_security.disabled: 'true'
+    networks:
+      - opensearch-net
+networks:
+  opensearch-net:
+    driver: bridge

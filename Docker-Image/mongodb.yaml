@@ -1,0 +1,23 @@
+version: "3.8"
+services:
+  database_mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend
+    labels:
+      - name=database
+volumes:
+  mongodb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Mongodb
+      o: bind
+networks:
+  backend:
+    driver: bridge

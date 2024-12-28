@@ -1,0 +1,124 @@
+version: '3.8'
+
+services:
+  # MongoDB Service
+  database_mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend
+    labels:
+      - name=mongo
+
+  # PostgreSQL Service
+  database_postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgre
+      POSTGRES_PASSWORD: postgre
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/data/db
+    networks:
+      - backend
+    labels:
+      - name=postgres
+
+  # Redis Service
+  database_redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    labels:
+      - name=redis
+
+  # OpenSearch Node
+  opensearch-node:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m"
+      - "DISABLE_INSTALL_DEMO_CONFIG=false"
+      - "DISABLE_SECURITY_PLUGIN=false"  # Security plugin enabled
+      - "OPENSEARCH_INITIAL_ADMIN_PASSWORD=SamplePassword1!"  # Set admin password
+      - "OPENSEARCH_SECURITY_DISABLED=false"  # Enable security
+      - "plugins.security.ssl.http.enabled=false"  # Disable SSL for HTTP communication
+      - "OPENSEARCH_SECURITY_SSL_ONLY=false"  # Disable SSL-only mode
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data:/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - backend
+
+  # OpenSearch Dashboards
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    depends_on:
+      - opensearch-node
+    ports:
+      - "5601:5601"
+    environment:
+      - server.host=0.0.0.0
+      - server.port=5601
+      - OPENSEARCH_HOSTS=http://opensearch-node:9200  # Use HTTP instead of HTTPS
+      - server.ssl.enabled=false  # Disable SSL in Dashboards
+      - opensearch.ssl.verificationMode=none  # SSL verification is unnecessary for HTTP
+      - opensearch_security.cookie.secure=false  # Disable secure cookie flag (for non-HTTPS)
+      - OPENSEARCH_USERNAME=admin  # Set the admin username
+      - OPENSEARCH_PASSWORD=SamplePassword1!  # Set the password to match OpenSearch
+    networks:
+      - backend
+
+volumes:
+  mongodb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "C:/Users/Tarun/Documents/DockerImageFiles/ServicesDatasets/Mongodb"
+      o: bind
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "C:/Users/Tarun/Documents/DockerImageFiles/ServicesDatasets/Postgres"
+      o: bind
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "C:/Users/Tarun/Documents/DockerImageFiles/ServicesDatasets/Redis"
+      o: bind
+  opensearch-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: "C:/Users/Tarun/Documents/DockerImageFiles/ServicesDatasets/OpenSearch"
+      o: bind
+
+networks:
+  backend:
+    driver: bridge

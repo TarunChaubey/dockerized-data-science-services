@@ -1,0 +1,27 @@
+version: "3.8"
+services:
+  database_postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgre
+      POSTGRES_PASSWORD: postgre
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/data
+    networks:
+      - backend
+    labels:
+      - name=database
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Postgre
+      o: bind
+networks:
+  backend:
+    driver: bridge

@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  database_mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend
+    labels:
+      - name=database
+
+  database_postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: postgre
+      POSTGRES_PASSWORD: postgre
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/data
+    networks:
+      - backend
+    labels:
+      - name=database
+
+  database_redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - backend
+    labels:
+      - name=database
+
+volumes:
+  mongodb_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Mongodb
+      o: bind
+
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Postgre
+      o: bind
+
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:/Users/Tarun/Documents/DockerImageFiles/Redis
+      o: bind
+networks:
+  backend:
+    driver: bridge
