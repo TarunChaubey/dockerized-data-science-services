@@ -17,12 +17,13 @@ services:
       - name=mongo
 
   postgres_db:
-    image: postgres:${POSTGRES_VERSION}
+    image: ${POSTGRES_IMAGE}:${POSTGRES_IMAGE_TAG}
     container_name: ${POSTGRES_CONTAINER_NAME}
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      # - ${POSTGRES_DATA_PATH}:/var/lib/postgresql/data # dpgvector/pgvector
+      - ${POSTGRES_DATA_PATH}:/postgresql/data # ankane/pgvector
     networks:
       - backend_network
     environment:
@@ -40,8 +41,6 @@ services:
     networks:
       - backend_network
     command: redis-server --requirepass ${REDIS_PASSWORD}
-    labels:
-      - name=redis
 
   opensearch_node:
     image: opensearchproject/opensearch:${OPENSEARCH_VERSION}
